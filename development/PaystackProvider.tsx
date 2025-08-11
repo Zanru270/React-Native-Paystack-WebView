@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react';
-import { Modal, View, ActivityIndicator, } from 'react-native';
+import { Modal, View, ActivityIndicator } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     PaystackParams,
     PaystackProviderProps,
@@ -47,7 +48,7 @@ export const PaystackProvider: React.FC<PaystackProviderProps> = ({
     const close = () => {
         setVisible(false);
         setParams(null);
-    }
+    };
 
     const handleMessage = (event: WebViewMessageEvent) => {
         handlePaystackMessage({
@@ -70,7 +71,7 @@ export const PaystackProvider: React.FC<PaystackProviderProps> = ({
                 reference: params.reference || fallbackRef,
                 metadata: params.metadata,
                 ...(currency && { currency }),
-                channels: defaultChannels, 
+                channels: defaultChannels,
                 plan: params.plan,
                 invoice_limit: params.invoice_limit,
                 subaccount: params.subaccount,
@@ -89,19 +90,21 @@ export const PaystackProvider: React.FC<PaystackProviderProps> = ({
         <PaystackContext.Provider value={{ popup: { checkout, newTransaction } }}>
             {children}
             <Modal visible={visible} transparent animationType="slide">
-                <View style={styles.container}>
-                    <WebView
-                        originWhitelist={["*"]}
-                        source={{ html: paystackHTML }}
-                        onMessage={handleMessage}
-                        javaScriptEnabled
-                        domStorageEnabled
-                        startInLoadingState
-                        onLoadStart={() => debug && console.log('[Paystack] WebView Load Start')}
-                        onLoadEnd={() => debug && console.log('[Paystack] WebView Load End')}
-                        renderLoading={() => <ActivityIndicator size="large" />}
-                    />
-                </View>
+                <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+                    <View style={styles.container}>
+                        <WebView
+                            originWhitelist={["*"]}
+                            source={{ html: paystackHTML }}
+                            onMessage={handleMessage}
+                            javaScriptEnabled
+                            domStorageEnabled
+                            startInLoadingState
+                            onLoadStart={() => debug && console.log('[Paystack] WebView Load Start')}
+                            onLoadEnd={() => debug && console.log('[Paystack] WebView Load End')}
+                            renderLoading={() => <ActivityIndicator size="large" />}
+                        />
+                    </View>
+                </SafeAreaView>
             </Modal>
         </PaystackContext.Provider>
     );
